@@ -38,7 +38,11 @@
     mr  7, 1
 
     # restore RSP (pointing to context-data) from R4
-    mr  1, 4
+    # restore RSP (pointing to fcontext_t) from R4
+    lwz  1, 0(4)
+    # set fcontext_t to nullptr
+    li   0, 0
+    stw  0, 0(4)
 
     ld  13, 0(1)  # restore R13
     ld  14, 8(1)  # restore R14

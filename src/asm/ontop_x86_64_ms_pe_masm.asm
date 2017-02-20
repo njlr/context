@@ -135,8 +135,11 @@ ontop_fcontext PROC BOOST_CONTEXT_EXPORT FRAME
     ; preserve RSP (pointing to context-data) in RCX
     mov  rcx, rsp
 
-    ; restore RSP (pointing to context-data) from RDX
-    mov  rsp, rdx
+    ; restore RSP (pointing to fcontext_t) from RDX
+    mov  rsp, [rdx]
+    ; set fcontext_t to nullptr
+	xor  r10, r10
+    mov [rdx], r10
 
     ; restore XMM storage
     movaps  xmm6, [rsp]

@@ -47,8 +47,10 @@ _jump_fcontext:
     /* second arg of jump_fcontext() == data to be transferred */
     movl  0x24(%esp), %edx
 
-    /* restore ESP (pointing to context-data) from EAX */
-    movl  %eax, %esp
+    /* restore ESP (pointing to fcontext_t) from EAX */
+    movl  (%eax), %esp
+    /* set fcontext_t to nullptr */
+    movl $0, (%eax)
 
     /* address of returned transport_t */
     movl 0x1c(%esp), %eax

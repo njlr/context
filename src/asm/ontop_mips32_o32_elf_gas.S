@@ -73,7 +73,9 @@ ontop_fcontext:
     move  $a0, $sp
 
     # restore SP (pointing to context-data) from A1
-    move  $sp, $a1
+    move  $sp, ($a1)
+    # set fcontext_t to nullptr
+    move ($a1), 0
 
 #if defined(__mips_hard_float)
     l.d  $f20, ($sp)  # restore F20

@@ -64,8 +64,12 @@ jump_fcontext PROC BOOST_CONTEXT_EXPORT
     ; firstarg of jump_fcontext() == fcontext to jump to
     mov  ecx, [esp+030h]
     
-    ; restore ESP (pointing to context-data) from ECX
-    mov  esp, ecx
+    ; restore ESP (pointing to fcontext_t) from ECX
+    mov  esp, [ecx]
+
+    ; set fcontext_t to nullptr
+	xor  edx, edx
+    mov  [ecx], edx
 
     ; restore MMX control- and status-word
     ldmxcsr  [esp]

@@ -51,8 +51,12 @@ ontop_fcontext PROC
     ; store RSP (pointing to context-data) in A1
     mov  a1, sp
 
-    ; restore RSP (pointing to context-data) from A2
-    mov  sp, a2
+    ; restore RSP (pointing to fcontext_t) from A2
+    ldr  v1, [a2]
+    mov  sp, v1
+    ; set fcontext_t to nullptr
+    movs v1, #0
+    str  v1, [a2]
 
     ; restore stack base
     pop  {a1}

@@ -133,8 +133,11 @@ ontop_fcontext:
     # store RSP (pointing to context-data) in R7
     mr  %r7, %r1
 
-    # restore RSP (pointing to context-data) from R4
-    mr  %r1, %r4
+    # restore RSP (pointing to fcontext_t) from R4
+    lwz  %r1, 0(%r4)
+    # set fcontext_t to nullptr
+    li   %r0, 0
+    stw  %r0, 0(%r4)
 
 #if _CALL_ELF != 2
     ld  %r2,  0(%r1)  # restore TOC

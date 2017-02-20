@@ -46,8 +46,10 @@ _ontop_fcontext:
     /* store RSP (pointing to context-data) in RAX */
     movq  %rsp, %rax
 
-    /* restore RSP (pointing to context-data) from RDI */
-    movq  %rdi, %rsp
+    /* restore RSP (pointing to fcontext_t) from RDI */
+    movq  (%rdi), %rsp
+    /* set fcontext_t to nullptr */
+    movq  $0, (%rdi)
 
     ldmxcsr  (%rsp)     /* restore MMX control- and status-word */
     fldcw    0x4(%rsp)  /* restore x87 control-word */

@@ -62,7 +62,8 @@ ontop_fcontext PROC BOOST_CONTEXT_EXPORT
     mov  ecx, esp
 
     ; first arg of ontop_fcontext() == fcontext to jump to
-    mov  eax, [esp+030h]
+    mov  edx, [esp+030h]
+    mov  eax, [edx];
 
 	; pass parent fcontext_t
 	mov  [eax+030h], ecx
@@ -78,6 +79,10 @@ ontop_fcontext PROC BOOST_CONTEXT_EXPORT
     
     ; restore ESP (pointing to context-data) from EAX
     mov  esp, eax
+	
+    ; set fcontext_t to nullptr
+	xor  eax, eax
+    mov  [edx], eax
 
     ; restore MMX control- and status-word
     ldmxcsr  [esp]

@@ -51,8 +51,12 @@ jump_fcontext PROC
     ; store RSP (pointing to context-data) in A1
     mov  a1, sp
 
-    ; restore RSP (pointing to context-data) from A2
-    mov  sp, a2
+    ; restore RSP (pointing to fcontext_t) from A2
+    ldr  a4, [a2]
+    mov  sp, a4
+    ; set fcontext_t to nullptr
+    movs r4, #0
+    str  r4, [a2]
 
     ; restore deallocation stack
     pop  {a5}

@@ -78,8 +78,11 @@ _jump_fcontext:
     ; store RSP (pointing to context-data) in X0
     mov  x4, sp
 
-    ; restore RSP (pointing to context-data) from X1
-    mov  sp, x0
+    # restore RSP (pointing to fcontext_t) from X0
+    ldr  x3, [x0]
+    mov  sp, x3
+    # set fcontext_t to nullptr
+    str  xzr, [x0]
 
     ; load d8 - d15
     ldp  d8,  d9,  [sp, #0x00]

@@ -140,8 +140,10 @@ jump_fcontext:
     /* preserve RSP (pointing to context-data) in R9 */
     movq  %rsp, %r9
 
-    /* restore RSP (pointing to context-data) from RDX */
-    movq  %rdx, %rsp
+    /* restore RSP (pointing to fcontext_t) from RDX */
+    movq  (%rdx), %rsp
+    /* set fcontext_t to nullptr */
+    movq  $0, (%rdx)
 
     /* save XMM storage */
     movaps  0x0(%rsp), %xmm6

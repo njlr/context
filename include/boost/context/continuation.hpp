@@ -94,15 +94,15 @@ void context_entry( transfer_t t_) noexcept {
     transfer_t t = { nullptr, nullptr };
     try {
         // jump back to `context_create()`
-        t = jump_fcontext( t_.fctx, nullptr);
+        t = jump_fcontext( & t_.fctx, nullptr);
         // start executing
         t = rec->run( t);
     } catch ( forced_unwind const& e) {
         t = { e.fctx, nullptr };
     }
     BOOST_ASSERT( nullptr != t.fctx);
-    // destroy context-stack of `this`context on next context
-    ontop_fcontext( t.fctx, rec, context_exit< Rec >);
+    // destroy context-stack of `rec` in next resumed context
+    ontop_fcontext( & t.fctx, rec, context_exit< Rec >);
     BOOST_ASSERT_MSG( false, "context already terminated");
 }
 
@@ -183,7 +183,7 @@ fcontext_t context_create( StackAlloc salloc, Fn && fn) {
     auto rec = ::new ( sp) Record{
             sctx, salloc, std::forward< Fn >( fn) };
     // transfer control structure to context-stack
-    return jump_fcontext( fctx, rec).fctx;
+    return jump_fcontext( const_cast< fcontext_t * >( & fctx), rec).fctx;
 }
 
 template< typename Record, typename StackAlloc, typename Fn >
@@ -211,7 +211,7 @@ fcontext_t context_create( preallocated palloc, StackAlloc salloc, Fn && fn) {
     auto rec = ::new ( sp) Record{
             palloc.sctx, salloc, std::forward< Fn >( fn) };
     // transfer control structure to context-stack
-    return jump_fcontext( fctx, rec).fctx;
+    return jump_fcontext( const_cast< fcontext_t * >( & fctx), rec).fctx;
 }
 
 template< typename ... Arg >
@@ -318,11 +318,7 @@ public:
 
     ~continuation() {
         if ( nullptr != t_.fctx) {
-#if defined(BOOST_NO_CXX14_STD_EXCHANGE)
-            detail::ontop_fcontext( detail::exchange( t_.fctx, nullptr), nullptr, detail::context_unwind);
-#else
-            detail::ontop_fcontext( std::exchange( t_.fctx, nullptr), nullptr, detail::context_unwind);
-#endif
+            detail::ontop_fcontext( & t_.fctx, nullptr, detail::context_unwind);
         }
     }
 
@@ -346,52 +342,26 @@ public:
     continuation operator()( Arg ... arg) {
         BOOST_ASSERT( nullptr != t_.fctx);
         auto tpl = std::make_tuple( std::forward< Arg >( arg) ... );
-        return detail::jump_fcontext(
-#if defined(BOOST_NO_CXX14_STD_EXCHANGE)
-                    detail::exchange( t_.fctx, nullptr),
-#else
-                    std::exchange( t_.fctx, nullptr),
-#endif
-                    & tpl);
+        return detail::jump_fcontext( & t_.fctx, & tpl);
     }
 
     template< typename Fn, typename ... Arg >
     continuation operator()( exec_ontop_arg_t, Fn && fn, Arg ... arg) {
         BOOST_ASSERT( nullptr != t_.fctx);
         auto tpl = std::make_tuple( std::forward< Fn >( fn), std::forward< Arg >( arg) ... );
-        return detail::ontop_fcontext(
-#if defined(BOOST_NO_CXX14_STD_EXCHANGE)
-                    detail::exchange( t_.fctx, nullptr),
-#else
-                    std::exchange( t_.fctx, nullptr),
-#endif
-                    & tpl,
-                    context_ontop< continuation, Fn, Arg ... >);
+        return detail::ontop_fcontext( & t_.fctx, & tpl, context_ontop< continuation, Fn, Arg ... >);
     }
 
     continuation operator()() {
         BOOST_ASSERT( nullptr != t_.fctx);
-        return detail::jump_fcontext(
-#if defined(BOOST_NO_CXX14_STD_EXCHANGE)
-                    detail::exchange( t_.fctx, nullptr),
-#else
-                    std::exchange( t_.fctx, nullptr),
-#endif
-                    nullptr);
+        return detail::jump_fcontext( & t_.fctx, nullptr);
     }
 
     template< typename Fn >
     continuation operator()( exec_ontop_arg_t, Fn && fn) {
         BOOST_ASSERT( nullptr != t_.fctx);
         auto p = std::make_tuple( std::forward< Fn >( fn) );
-        return detail::ontop_fcontext(
-#if defined(BOOST_NO_CXX14_STD_EXCHANGE)
-                    detail::exchange( t_.fctx, nullptr),
-#else
-                    std::exchange( t_.fctx, nullptr),
-#endif
-                    & p,
-                    context_ontop_void< continuation, Fn >);
+        return detail::ontop_fcontext( & t_.fctx, & p, context_ontop_void< continuation, Fn >);
     }
 
     explicit operator bool() const noexcept {

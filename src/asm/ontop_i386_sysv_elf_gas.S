@@ -43,7 +43,10 @@ ontop_fcontext:
     movl  %esp, %ecx
 
     /* first arg of ontop_fcontext() == fcontext to jump to */
-    movl  0x20(%esp), %eax
+    movl  0x20(%esp), %edx
+    movl  (%edx), %eax
+    /* set fcontext_t to nullptr */
+    movl  $0, (%edx)
 
     /* pass parent fcontext_t */
     movl  %ecx, 0x20(%eax)
@@ -57,7 +60,7 @@ ontop_fcontext:
     /* third arg of ontop_fcontext() == ontop-function */
     movl  0x28(%esp), %ecx
 
-    /* restore ESP (pointing to context-data) from EAX */
+    /* restore ESP (pointing to fcontext_t) from EAX */
     movl  %eax, %esp
 
     /* address of returned transport_t */

@@ -44,8 +44,10 @@ jump_fcontext:
     /* store RSP (pointing to context-data) in RAX */
     movq  %rsp, %rax
 
-    /* restore RSP (pointing to context-data) from RDI */
-    movq  %rdi, %rsp
+    /* restore RSP (pointing to fcontext_t) from RDI */
+    movq  (%rdi), %rsp
+    /* set fcontext_t to nullptr */
+    movq  $0, (%rdi)
 
     movq  0x38(%rsp), %r8  /* restore return-address */
 

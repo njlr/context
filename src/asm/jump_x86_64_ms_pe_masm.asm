@@ -75,7 +75,7 @@
 ;  |                                   parameter area                               |
 ;  ----------------------------------------------------------------------------------
 ;  ----------------------------------------------------------------------------------
-;  |    79   |   80    |    81    |   82    |    83   |    84   |    85   |    86   |
+;  |    79    :80    |    81    |   82    |    83   |    84   |    85   |    86   |
 ;  ----------------------------------------------------------------------------------
 ;  |  0x140  |  0x144  |  0x148   |  0x14c  |  0x150  |  0x154  |  0x158  |  0x15c  |
 ;  ----------------------------------------------------------------------------------
@@ -135,8 +135,11 @@ jump_fcontext PROC BOOST_CONTEXT_EXPORT FRAME
     ; preserve RSP (pointing to context-data) in R9
     mov  r9, rsp
 
-    ; restore RSP (pointing to context-data) from RDX
-    mov  rsp, rdx
+    ; restore RSP (pointing to fcontext_t) from RDX
+    mov  rsp, [rdx]
+    ; set fcontext_t to nullptr
+	xor  r10, r10
+    mov [rdx], r10
 
     ; restore XMM storage
     movaps  xmm6, [rsp]

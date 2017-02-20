@@ -142,7 +142,7 @@ public:
 
     ~execution_context() {
         if ( nullptr != fctx_) {
-            detail::ontop_fcontext( detail::exchange( fctx_, nullptr), nullptr, detail::context_unwind);
+            detail::ontop_fcontext( ( detail::fcontext_t *) &  fctx_, nullptr, detail::context_unwind);
         }
     }
 
@@ -164,7 +164,7 @@ public:
 
     execution_context operator()() {
         BOOST_ASSERT( nullptr != fctx_);
-        detail::transfer_t t = detail::jump_fcontext( detail::exchange( fctx_, nullptr), nullptr);
+        detail::transfer_t t = detail::jump_fcontext( ( detail::fcontext_t *) & fctx_, nullptr);
         if ( nullptr != t.data) {
             std::exception_ptr * eptr = static_cast< std::exception_ptr * >( t.data);
             try {
@@ -181,7 +181,7 @@ public:
         BOOST_ASSERT( nullptr != fctx_);
         auto p = std::make_tuple( fn, std::exception_ptr{} );
         detail::transfer_t t = detail::ontop_fcontext(
-                detail::exchange( fctx_, nullptr),
+                ( detail::fcontext_t *) & fctx_,
                 & p,
                 detail::context_ontop_void< execution_context, Fn >);
         if ( nullptr != t.data) {
@@ -287,7 +287,7 @@ fcontext_t context_create_void( StackAlloc salloc, Fn && fn, Params && ... param
     auto rec = ::new ( sp) record_t{
             sctx, salloc, std::forward< Fn >( fn), std::forward< Params >( params) ... };
     // transfer control structure to context-stack
-    return jump_fcontext( fctx, rec).fctx;
+    return jump_fcontext( ( fcontext_t *) & fctx, rec).fctx;
 }
 
 template< typename Ctx, typename StackAlloc, typename Fn, typename ... Params >
@@ -317,7 +317,7 @@ fcontext_t context_create_void( preallocated palloc, StackAlloc salloc, Fn && fn
     auto rec = ::new ( sp) record_t{
             palloc.sctx, salloc, std::forward< Fn >( fn), std::forward< Params >( params) ... };
     // transfer control structure to context-stack
-    return jump_fcontext( fctx, rec).fctx;
+    return jump_fcontext( ( fcontext_t *) & fctx, rec).fctx;
 }
 
 }

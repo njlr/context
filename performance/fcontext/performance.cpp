@@ -61,7 +61,7 @@ boost::uint64_t jobs = 1000;
 static void foo( boost::context::detail::transfer_t t_) {
     boost::context::detail::transfer_t t = t_;
     while ( true) {
-        t = boost::context::detail::jump_fcontext( t.fctx, 0);
+        t = boost::context::detail::jump_fcontext( & t.fctx, 0);
     }
 }
 
@@ -73,11 +73,11 @@ duration_type measure_time_fc() {
             foo);
 
     // cache warum-up
-    boost::context::detail::transfer_t t = boost::context::detail::jump_fcontext( ctx, 0);
+    boost::context::detail::transfer_t t = boost::context::detail::jump_fcontext( & ctx, 0);
 
     time_point_type start( clock_type::now() );
     for ( std::size_t i = 0; i < jobs; ++i) {
-        t = boost::context::detail::jump_fcontext( t.fctx, 0);
+        t = boost::context::detail::jump_fcontext( & t.fctx, 0);
     }
     duration_type total = clock_type::now() - start;
     total -= overhead_clock(); // overhead of measurement
@@ -96,11 +96,11 @@ cycle_type measure_cycles_fc() {
             foo);
 
     // cache warum-up
-    boost::context::detail::transfer_t t = boost::context::detail::jump_fcontext( ctx, 0);
+    boost::context::detail::transfer_t t = boost::context::detail::jump_fcontext( & ctx, 0);
 
     cycle_type start( cycles() );
     for ( std::size_t i = 0; i < jobs; ++i) {
-        t = boost::context::detail::jump_fcontext( t.fctx, 0);
+        t = boost::context::detail::jump_fcontext( & t.fctx, 0);
     }
     cycle_type total = cycles() - start;
     total -= overhead_cycle(); // overhead of measurement

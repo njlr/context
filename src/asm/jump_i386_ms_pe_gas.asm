@@ -66,8 +66,10 @@ _jump_fcontext:
     /* firstarg of jump_fcontext() == fcontext to jump to */
     movl  0x30(%esp), %ecx
     
-    /* restore ESP (pointing to context-data) from ECX */
-    movl  %ecx, %esp
+    /* restore ESP (pointing to fcontext_t) from ECX */
+    movl  (%ecx), %esp
+    /* set fcontext_t to nullptr */
+    movl  $0, (%ecx)
 
     /* restore MMX control- and status-word */
     ldmxcsr  (%esp)

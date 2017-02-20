@@ -203,7 +203,7 @@ public:
 
     ~execution_context() {
         if ( nullptr != fctx_) {
-            detail::ontop_fcontext( detail::exchange( fctx_, nullptr), nullptr, detail::context_unwind);
+            detail::ontop_fcontext( ( detail::fcontext_t *) & fctx_, nullptr, detail::context_unwind);
         }
     }
 
@@ -296,7 +296,7 @@ execution_context< Args ... >::operator()( Args ... args) {
     BOOST_ASSERT( nullptr != fctx_);
     args_tpl_t data( std::forward< Args >( args) ... );
     auto p = std::make_tuple( std::exception_ptr{}, std::move( data) );
-    detail::transfer_t t = detail::jump_fcontext( detail::exchange( fctx_, nullptr), & p);
+    detail::transfer_t t = detail::jump_fcontext( ( detail::fcontext_t *) & fctx_, & p);
     if ( nullptr != t.data) {
         auto p = static_cast< std::tuple< std::exception_ptr, args_tpl_t > * >( t.data);
         std::exception_ptr eptr = std::get< 0 >( * p);
@@ -320,7 +320,7 @@ execution_context< Args ... >::operator()( exec_ontop_arg_t, Fn && fn, Args ... 
     args_tpl_t data{ std::forward< Args >( args) ... };
     auto p = std::make_tuple( fn, std::make_tuple( std::exception_ptr{}, std::move( data) ) );
     detail::transfer_t t = detail::ontop_fcontext(
-            detail::exchange( fctx_, nullptr),
+            ( detail::fcontext_t *) & fctx_,
             & p,
             detail::context_ontop< execution_context, Fn, Args ... >);
     if ( nullptr != t.data) {
@@ -378,7 +378,7 @@ void context_entry( transfer_t t_) noexcept {
     transfer_t t = { nullptr, nullptr };
     try {
         // jump back to `context_create()`
-        t = jump_fcontext( t_.fctx, nullptr);
+        t = jump_fcontext( ( fcontext_t *) & t_.fctx, nullptr);
         // start executing
         t = rec->run( t);
     } catch ( forced_unwind const& e) {
@@ -386,7 +386,7 @@ void context_entry( transfer_t t_) noexcept {
     }
     BOOST_ASSERT( nullptr != t.fctx);
     // destroy context-stack of `this`context on next context
-    ontop_fcontext( t.fctx, rec, context_exit< Rec >);
+    ontop_fcontext( ( fcontext_t *) & t.fctx, rec, context_exit< Rec >);
     BOOST_ASSERT_MSG( false, "context already terminated");
 }
 
@@ -438,7 +438,7 @@ fcontext_t context_create( StackAlloc salloc, Fn && fn, Params && ... params) {
     auto rec = ::new ( sp) record_t{
             sctx, salloc, std::forward< Fn >( fn), std::forward< Params >( params) ... };
     // transfer control structure to context-stack
-    return jump_fcontext( fctx, rec).fctx;
+    return jump_fcontext( ( fcontext_t *) & fctx, rec).fctx;
 }
 
 template< typename Ctx, typename StackAlloc, typename Fn, typename ... Params >
@@ -468,7 +468,7 @@ fcontext_t context_create( preallocated palloc, StackAlloc salloc, Fn && fn, Par
     auto rec = ::new ( sp) record_t{
             palloc.sctx, salloc, std::forward< Fn >( fn), std::forward< Params >( params) ... };
     // transfer control structure to context-stack
-    return jump_fcontext( fctx, rec).fctx;
+    return jump_fcontext( ( fcontext_t *) & fctx, rec).fctx;
 }
 
 }

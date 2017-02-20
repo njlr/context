@@ -64,7 +64,10 @@ _ontop_fcontext:
     movl  %esp, %ecx
 
     /* first arg of ontop_fcontext() == fcontext to jump to */
-    movl  0x30(%esp), %eax
+    movl  0x30(%esp), %edx
+    movl  (%edx), %eax
+    /* set fcontext_t to nullptr */
+    movl  $0, (%edx)
 
 	/* pass parent fcontext_t */
 	movl  %ecx, 0x30(%eax)
