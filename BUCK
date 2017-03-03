@@ -5,6 +5,7 @@ cxx_library(
   header_namespace = 'boost/context',
   exported_headers = subdir_glob([
     ('include/boost/context', '**/*.hpp'),
+    ('include/boost/context', '**/*.ipp'),
   ]),
   srcs = glob([
     'src/*.cpp',
@@ -15,9 +16,10 @@ cxx_library(
     'src/untested.cpp',
   ]),
   platform_srcs = [
-    ('macosx', glob(['src/posix/**/*.cpp'])),
-    ('linux', glob(['src/posix/**/*.cpp'])),
-    ('windows', glob(['src/windows/**/*.cpp'])),
+    ('default', glob(['src/posix/**/*.cpp'])),
+    ('^macosx.*', glob(['src/posix/**/*.cpp'])),
+    ('^linux.*', glob(['src/posix/**/*.cpp'])),
+    ('^windows.*', glob(['src/windows/**/*.cpp'])),
   ],
   visibility = [
     'PUBLIC',
