@@ -1,7 +1,7 @@
 include_defs('//BUCKAROO_DEPS')
 
 cxx_library(
-  name = 'boost-context',
+  name = 'context',
   header_namespace = 'boost/context',
   exported_headers = subdir_glob([
     ('include/boost/context', '**/*.hpp'),
