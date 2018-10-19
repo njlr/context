@@ -1,8 +1,8 @@
 {
-  "name": "boost-context",
+  "name": "context",
   "dependencies": {
-    "boost-config": "1.63.0",
-    "boost-assert": "1.63.0",
-    "boost-thread": "1.63.0"
+    "boost/config": "1.63.0",
+    "boost/assert": "1.63.0",
+    "boost/thread": "1.63.0"
   }
 }
